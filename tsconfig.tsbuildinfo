@@ -1,0 +1,1 @@
+{"root":["./src/App.tsx","./src/data.ts","./src/main.tsx","./src/types.ts","./src/vite-env.d.ts","./src/components/DetailModal.tsx","./src/components/FilterBar.tsx","./src/components/KanbanColumn.tsx","./src/components/PairCard.tsx"],"version":"5.9.3"}
