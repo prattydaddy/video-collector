@@ -95,7 +95,7 @@ export default function App() {
               <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
             </svg>
           </div>
-          <span className="text-[15px] font-semibold text-gray-900 tracking-tight">VideoCollect</span>
+          <span className="text-[15px] font-semibold text-gray-900 tracking-tight">Video Tagging Kanban</span>
         </div>
         <nav className="px-2 mt-1">
           <button className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg bg-gray-100 text-gray-900 text-[13px] font-medium">
@@ -125,7 +125,7 @@ export default function App() {
 
         {/* Page header */}
         <div className="px-6 pt-6 pb-0">
-          <h1 className="text-3xl font-bold text-gray-900">Client Video Pairs</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Video Tagging Kanban</h1>
           <p className="text-sm text-gray-400 mt-1">
             · {pairs.length} pairs · {pairs.length * 2} videos · {completeCount} complete
           </p>
