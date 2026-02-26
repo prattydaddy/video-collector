@@ -56,7 +56,19 @@ export default function App() {
     return pairs.filter((p) => {
       if (typeFilter !== "All" && p.type !== typeFilter) return false;
       if (vaFilter !== "All" && p.assignedVA !== vaFilter) return false;
-      if (search && !p.description.toLowerCase().includes(search.toLowerCase()) && !`pair ${p.pairNumber}`.includes(search.toLowerCase())) return false;
+      if (search) {
+        const q = search.toLowerCase();
+        const searchable = [
+          p.description,
+          p.fullInstructions,
+          p.type,
+          p.assignedVA || "",
+          p.notes || "",
+          `pair ${p.pairNumber}`,
+          `${p.pairNumber}`,
+        ].join(" ").toLowerCase();
+        if (!searchable.includes(q)) return false;
+      }
       return true;
     });
   }, [pairs, typeFilter, vaFilter, search]);
