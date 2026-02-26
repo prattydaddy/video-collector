@@ -9,7 +9,7 @@ import type { VideoPair, Stage } from "./types";
 import { STAGES } from "./types";
 
 const STORAGE_KEY = "video-collector-pairs";
-const STORE_VERSION = 4;
+const STORE_VERSION = 5;
 
 function loadPairs(): VideoPair[] {
   const version = localStorage.getItem("store-version");
