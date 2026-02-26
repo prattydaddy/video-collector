@@ -58,7 +58,8 @@ function mergeDbRow(row: any): VideoPair {
     videoAUploaded: staticPair?.videoAUploaded || false,
     videoBUploaded: staticPair?.videoBUploaded || false,
     qaChecklist: staticPair?.qaChecklist || { cameraPosition: false, lighting: false, oneChange: false, duration: false, resolution: false, stableCamera: false, noOutfitChange: false, noFilters: false, naming: false },
-    delivered: staticPair?.delivered || false,
+    delivered: !!row.client_drive_link || staticPair?.delivered || false,
+    clientDriveLink: row.client_drive_link || undefined,
   };
 }
 

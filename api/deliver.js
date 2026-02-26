@@ -1,4 +1,5 @@
 import { google } from "googleapis";
+import { neon } from "@neondatabase/serverless";
 
 function getAuth() {
   const oauth2Client = new google.auth.OAuth2(
@@ -69,6 +70,15 @@ export default async function handler(req, res) {
         fields: "id,name",
       });
       copied.push(copy.data.name);
+    }
+
+    // Save client folder link to DB
+    const clientDriveLink = `https://drive.google.com/drive/folders/${destFolder.data.id}`;
+    try {
+      const sql = neon(process.env.DATABASE_URL);
+      await sql`UPDATE video_pairs SET client_drive_link = ${clientDriveLink}, updated_at = NOW() WHERE id = ${pairNumber}`;
+    } catch (dbErr) {
+      console.error("Failed to save client link to DB:", dbErr);
     }
 
     return res.status(200).json({

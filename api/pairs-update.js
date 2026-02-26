@@ -41,6 +41,9 @@ export default async function handler(req, res) {
     if (fields.video_b_id !== undefined) {
       await sql`UPDATE video_pairs SET video_b_id = ${fields.video_b_id}, updated_at = NOW() WHERE id = ${id}`;
     }
+    if (fields.client_drive_link !== undefined) {
+      await sql`UPDATE video_pairs SET client_drive_link = ${fields.client_drive_link}, updated_at = NOW() WHERE id = ${id}`;
+    }
 
     const updated = await sql`SELECT * FROM video_pairs WHERE id = ${id}`;
     res.status(200).json(updated[0]);
