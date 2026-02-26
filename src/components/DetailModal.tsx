@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { VideoPair, QAChecklist } from "../types";
 import { TYPE_COLORS, VAS } from "../types";
 
@@ -20,6 +21,17 @@ const QA_LABELS: { key: keyof QAChecklist; label: string }[] = [
 
 export default function DetailModal({ pair, onClose, onUpdate }: Props) {
   const typeColor = TYPE_COLORS[pair.type];
+  const [copiedFile, setCopiedFile] = useState<string | null>(null);
+
+  const padded = String(pair.pairNumber).padStart(2, "0");
+  const filenameA = `Pair${padded}_A.mp4`;
+  const filenameB = `Pair${padded}_B.mp4`;
+
+  function copyFilename(filename: string) {
+    navigator.clipboard.writeText(filename);
+    setCopiedFile(filename);
+    setTimeout(() => setCopiedFile(null), 1500);
+  }
 
   function toggleQA(key: keyof QAChecklist) {
     onUpdate({ ...pair, qaChecklist: { ...pair.qaChecklist, [key]: !pair.qaChecklist[key] } });
@@ -91,20 +103,33 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
 
           {/* Upload Status */}
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Upload Status</label>
-            <div className="flex gap-4 mt-1.5">
-              <button
-                onClick={() => toggleVideo("A")}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-medium transition-all ${pair.videoAUploaded ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}
-              >
-                {pair.videoAUploaded ? "✅" : "❌"} Video A
-              </button>
-              <button
-                onClick={() => toggleVideo("B")}
-                className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-[13px] font-medium transition-all ${pair.videoBUploaded ? "bg-emerald-50 border-emerald-200 text-emerald-700" : "bg-gray-50 border-gray-200 text-gray-500"}`}
-              >
-                {pair.videoBUploaded ? "✅" : "❌"} Video B
-              </button>
+            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Upload Files</label>
+            <div className="mt-1.5 border border-gray-200 rounded-xl overflow-hidden">
+              {([["A", filenameA, pair.videoAUploaded] as const, ["B", filenameB, pair.videoBUploaded] as const]).map(([which, filename, uploaded], i) => (
+                <div key={which} className={`flex items-center justify-between px-4 py-2.5 ${i > 0 ? "border-t border-gray-100" : ""}`}>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-gray-400 text-[13px]">📄</span>
+                    <code className="text-[13px] font-mono font-medium text-gray-800 bg-gray-50 px-2 py-0.5 rounded">{filename}</code>
+                    <button
+                      onClick={() => copyFilename(filename)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors relative"
+                      title="Copy filename"
+                    >
+                      {copiedFile === filename ? (
+                        <span className="text-[11px] font-medium text-emerald-600">Copied!</span>
+                      ) : (
+                        <span className="text-[14px]">📋</span>
+                      )}
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => toggleVideo(which)}
+                    className={`flex items-center gap-1.5 text-[12px] font-medium px-2.5 py-1 rounded-lg transition-all ${uploaded ? "bg-emerald-50 text-emerald-700" : "bg-gray-50 text-gray-400 hover:text-gray-600"}`}
+                  >
+                    {uploaded ? "✅" : "⬜"} Uploaded
+                  </button>
+                </div>
+              ))}
             </div>
           </div>
 
