@@ -38,8 +38,14 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
   }
 
   function toggleVideo(which: "A" | "B") {
-    if (which === "A") onUpdate({ ...pair, videoAUploaded: !pair.videoAUploaded });
-    else onUpdate({ ...pair, videoBUploaded: !pair.videoBUploaded });
+    const newA = which === "A" ? !pair.videoAUploaded : pair.videoAUploaded;
+    const newB = which === "B" ? !pair.videoBUploaded : pair.videoBUploaded;
+    const updated: Partial<VideoPair> = which === "A" ? { videoAUploaded: newA } : { videoBUploaded: newB };
+    // Auto-move to internal_review when both uploaded (only if currently in_progress or needs_revision)
+    if (newA && newB && (pair.stage === "in_progress" || pair.stage === "needs_revision")) {
+      updated.stage = "internal_review" as any;
+    }
+    onUpdate({ ...pair, ...updated });
   }
 
   return (
