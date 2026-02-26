@@ -7,5 +7,7 @@ export default async function handler(req, res) {
     hasRefreshToken: !!process.env.GOOGLE_REFRESH_TOKEN,
     refreshPrefix: (process.env.GOOGLE_REFRESH_TOKEN || '').substring(0, 10),
     hasDbUrl: !!process.env.DATABASE_URL,
+    ourFolder: process.env.OUR_DRIVE_FOLDER_ID || 'NOT SET',
+    clientFolder: process.env.CLIENT_DRIVE_FOLDER_ID || 'NOT SET',
   });
 }
