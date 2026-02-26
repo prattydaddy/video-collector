@@ -1,6 +1,6 @@
 import type { VideoPair } from "./types";
 
-const defaultQA = { cameraPosition: false, lighting: false, oneChange: false, duration: false, resolution: false, naming: false };
+const defaultQA = { cameraPosition: false, lighting: false, oneChange: false, duration: false, resolution: false, stableCamera: false, noOutfitChange: false, noFilters: false, naming: false };
 
 export const initialPairs: VideoPair[] = [
   // === OBJECT CHANGE (1-27) ===

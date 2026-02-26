@@ -11,9 +11,12 @@ const QA_LABELS: { key: keyof QAChecklist; label: string }[] = [
   { key: "cameraPosition", label: "Camera position identical" },
   { key: "lighting", label: "Lighting identical" },
   { key: "oneChange", label: "Only ONE thing changed" },
-  { key: "duration", label: "5-15 seconds each" },
+  { key: "duration", label: "5-20 seconds each" },
   { key: "resolution", label: "Min 720p, not blurry" },
-  { key: "naming", label: "Correct naming (PairX_A.mp4 / PairX_B.mp4)" },
+  { key: "stableCamera", label: "Stable camera (tripod preferred)" },
+  { key: "noOutfitChange", label: "No outfit changes between clips" },
+  { key: "noFilters", label: "No filters, edits, or jump cuts" },
+  { key: "naming", label: "Correct naming (PairXX_A.mp4 / PairXX_B.mp4)" },
 ];
 
 export default function DetailModal({ pair, onClose, onUpdate }: Props) {
@@ -51,6 +54,20 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
           <div>
             <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Instructions</label>
             <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.fullInstructions}</p>
+          </div>
+
+          {/* Rules */}
+          <div className="bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+            <label className="text-[11px] font-semibold text-red-400 uppercase tracking-wider">⚠️ Do NOT</label>
+            <ul className="mt-1.5 text-[12px] text-red-600 space-y-0.5 list-disc list-inside">
+              <li>Change camera angle between videos</li>
+              <li>Change lighting or shoot at different time of day</li>
+              <li>Change outfits between clips</li>
+              <li>Add filters, edits, or jump cuts</li>
+              <li>Make large or dramatic changes</li>
+              <li>Use different takes that look noticeably different</li>
+            </ul>
+            <p className="mt-2 text-[12px] text-red-700 font-medium">Goal: "Spot the difference" — everything same except ONE thing.</p>
           </div>
 
           {/* Assigned VA */}

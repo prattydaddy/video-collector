@@ -7,6 +7,9 @@ export interface QAChecklist {
   oneChange: boolean;
   duration: boolean;
   resolution: boolean;
+  stableCamera: boolean;
+  noOutfitChange: boolean;
+  noFilters: boolean;
   naming: boolean;
 }
 
