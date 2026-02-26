@@ -28,6 +28,7 @@ export interface VideoPair {
   videoBUploaded: boolean;
   qaChecklist: QAChecklist;
   delivered: boolean;
+  clientDriveLink?: string;
 }
 
 export const STAGES: { key: Stage; label: string; color: string }[] = [

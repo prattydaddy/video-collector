@@ -23,16 +23,20 @@ const TYPE_TO_DB: Record<string, string> = {
   "Audio Change": "Audio",
 };
 
-async function deliverToClient(pairNumber: number): Promise<boolean> {
+async function deliverToClient(pairNumber: number): Promise<{ ok: boolean; destFolderId?: string }> {
   try {
     const res = await fetch("/api/deliver", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pairNumber }),
     });
-    return res.ok;
+    if (res.ok) {
+      const data = await res.json();
+      return { ok: true, destFolderId: data.destFolderId };
+    }
+    return { ok: false };
   } catch {
-    return false;
+    return { ok: false };
   }
 }
 
@@ -151,8 +155,11 @@ export default function App() {
       setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, stage: targetStage } : p)));
       patchPair(activePair.pairNumber, { status: targetStage });
       if (targetStage === "complete" && !activePair.delivered) {
-        deliverToClient(activePair.pairNumber).then((ok) => {
-          if (ok) setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, delivered: true } : p)));
+        deliverToClient(activePair.pairNumber).then(({ ok, destFolderId }) => {
+          if (ok) {
+            const clientDriveLink = destFolderId ? `https://drive.google.com/drive/folders/${destFolderId}` : undefined;
+            setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, delivered: true, clientDriveLink } : p)));
+          }
         });
       }
     }
@@ -174,9 +181,10 @@ export default function App() {
     if (prev?.description !== updated.description) dbFields.description = updated.description;
     if (Object.keys(dbFields).length > 0) patchPair(updated.pairNumber, dbFields);
     if (updated.stage === "complete" && !updated.delivered) {
-      deliverToClient(updated.pairNumber).then((ok) => {
+      deliverToClient(updated.pairNumber).then(({ ok, destFolderId }) => {
         if (ok) {
-          const delivered = { ...updated, delivered: true };
+          const clientDriveLink = destFolderId ? `https://drive.google.com/drive/folders/${destFolderId}` : undefined;
+          const delivered = { ...updated, delivered: true, clientDriveLink };
           setPairs((prev) => prev.map((p) => (p.id === updated.id ? delivered : p)));
           setSelectedPair(delivered);
         }
