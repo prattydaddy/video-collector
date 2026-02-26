@@ -9,7 +9,20 @@ import type { VideoPair, Stage } from "./types";
 import { STAGES } from "./types";
 
 const STORAGE_KEY = "video-collector-pairs";
-const STORE_VERSION = 7;
+const STORE_VERSION = 8;
+
+async function deliverToClient(pairNumber: number): Promise<boolean> {
+  try {
+    const res = await fetch("/api/deliver", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pairNumber }),
+    });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
 
 function loadPairs(): VideoPair[] {
   const version = localStorage.getItem("store-version");
@@ -79,6 +92,11 @@ export default function App() {
 
     if (targetStage && activePair.stage !== targetStage) {
       setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, stage: targetStage } : p)));
+      if (targetStage === "complete" && !activePair.delivered) {
+        deliverToClient(activePair.pairNumber).then((ok) => {
+          if (ok) setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, delivered: true } : p)));
+        });
+      }
     }
   }
 
@@ -89,6 +107,15 @@ export default function App() {
   function handleUpdatePair(updated: VideoPair) {
     setPairs((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     setSelectedPair(updated);
+    if (updated.stage === "complete" && !updated.delivered) {
+      deliverToClient(updated.pairNumber).then((ok) => {
+        if (ok) {
+          const delivered = { ...updated, delivered: true };
+          setPairs((prev) => prev.map((p) => (p.id === updated.id ? delivered : p)));
+          setSelectedPair(delivered);
+        }
+      });
+    }
   }
 
   return (
