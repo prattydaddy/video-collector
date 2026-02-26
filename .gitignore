@@ -1,2 +1,3 @@
 node_modules\ndist\n.vite
 .vercel
+node_modules/
