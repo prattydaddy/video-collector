@@ -16,7 +16,6 @@ const QA_LABELS: { key: keyof QAChecklist; label: string }[] = [
   { key: "stableCamera", label: "Stable camera (tripod preferred)" },
   { key: "noOutfitChange", label: "No outfit changes between clips" },
   { key: "noFilters", label: "No filters, edits, or jump cuts" },
-  { key: "naming", label: "Correct naming (PairXX_A.mp4 / PairXX_B.mp4)" },
 ];
 
 export default function DetailModal({ pair, onClose, onUpdate }: Props) {
