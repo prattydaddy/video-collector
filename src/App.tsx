@@ -9,7 +9,7 @@ import type { VideoPair, Stage } from "./types";
 import { STAGES } from "./types";
 
 const STORAGE_KEY = "video-collector-pairs";
-const STORE_VERSION = 5;
+const STORE_VERSION = 6;
 
 function loadPairs(): VideoPair[] {
   const version = localStorage.getItem("store-version");
@@ -51,7 +51,7 @@ export default function App() {
   const completeCount = useMemo(() => pairs.filter((p) => p.stage === "complete").length, [pairs]);
 
   const grouped = useMemo(() => {
-    const map: Record<Stage, VideoPair[]> = { needs_assignment: [], in_progress: [], internal_review: [], complete: [] };
+    const map: Record<Stage, VideoPair[]> = { needs_assignment: [], in_progress: [], internal_review: [], needs_revision: [], complete: [] };
     filtered.forEach((p) => map[p.stage].push(p));
     return map;
   }, [filtered]);

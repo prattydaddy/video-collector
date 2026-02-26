@@ -1,4 +1,4 @@
-export type Stage = "needs_assignment" | "in_progress" | "internal_review" | "complete";
+export type Stage = "needs_assignment" | "in_progress" | "internal_review" | "needs_revision" | "complete";
 export type PairType = "Object Change" | "Action Change" | "Speech Change" | "Audio Change";
 
 export interface QAChecklist {
@@ -33,6 +33,7 @@ export const STAGES: { key: Stage; label: string; color: string }[] = [
   { key: "needs_assignment", label: "Needs Assignment", color: "#6b7280" },
   { key: "in_progress", label: "In Progress", color: "#3b82f6" },
   { key: "internal_review", label: "Internal Review", color: "#f59e0b" },
+  { key: "needs_revision", label: "Needs Revision", color: "#ef4444" },
   { key: "complete", label: "Complete", color: "#10b981" },
 ];
 

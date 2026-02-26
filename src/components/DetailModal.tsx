@@ -164,7 +164,7 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
             </button>
             <button
               onClick={() => {
-                onUpdate({ ...pair, stage: "in_progress", notes: pair.notes || "Reshoot requested" });
+                onUpdate({ ...pair, stage: "needs_revision", notes: pair.notes || "Reshoot requested" });
                 onClose();
               }}
               className="flex-1 px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-[13px] font-semibold rounded-xl transition-colors"
