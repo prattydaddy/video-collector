@@ -24,6 +24,7 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
   const [editingDesc, setEditingDesc] = useState(false);
   const [descDraft, setDescDraft] = useState(pair.description);
+  const [driveSynced, setDriveSynced] = useState(false);
 
   const padded = String(pair.pairNumber).padStart(2, "0");
   const filenameA = `Pair${padded}_A.mp4`;
@@ -89,6 +90,14 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
                 onBlur={() => {
                   if (descDraft !== pair.description) {
                     onUpdate({ ...pair, description: descDraft });
+                    // Fire-and-forget Drive sync
+                    fetch("/api/update-description", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ pairNumber: pair.pairNumber, description: descDraft }),
+                    })
+                      .then((r) => { if (r.ok) { setDriveSynced(true); setTimeout(() => setDriveSynced(false), 2000); } })
+                      .catch(() => {});
                   }
                   setEditingDesc(false);
                 }}
@@ -108,6 +117,7 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
             ) : (
               <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.description}</p>
             )}
+            {driveSynced && <span className="text-[11px] text-emerald-600 mt-1">📁 Synced to Drive</span>}
           </div>
 
           {/* Full Instructions */}
