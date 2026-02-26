@@ -8,8 +8,20 @@ import { initialPairs } from "./data";
 import type { VideoPair, Stage } from "./types";
 import { STAGES } from "./types";
 
-const STORAGE_KEY = "video-collector-pairs";
 const STORE_VERSION = 11;
+
+const TYPE_FROM_DB: Record<string, string> = {
+  Object: "Object Change",
+  Action: "Action Change",
+  Speech: "Speech Change",
+  Audio: "Audio Change",
+};
+const TYPE_TO_DB: Record<string, string> = {
+  "Object Change": "Object",
+  "Action Change": "Action",
+  "Speech Change": "Speech",
+  "Audio Change": "Audio",
+};
 
 async function deliverToClient(pairNumber: number): Promise<boolean> {
   try {
@@ -24,22 +36,43 @@ async function deliverToClient(pairNumber: number): Promise<boolean> {
   }
 }
 
-function loadPairs(): VideoPair[] {
-  const version = localStorage.getItem("store-version");
-  if (version !== String(STORE_VERSION)) {
-    localStorage.clear();
-    localStorage.setItem("store-version", String(STORE_VERSION));
-    return initialPairs;
-  }
+// Merge DB row with static data from initialPairs
+function mergeDbRow(row: any): VideoPair {
+  const pairNumber = row.id;
+  const staticPair = initialPairs.find((p) => p.pairNumber === pairNumber);
+  return {
+    id: `p${pairNumber}`,
+    pairNumber,
+    type: TYPE_FROM_DB[row.type] || row.type,
+    description: row.description || staticPair?.description || "",
+    fullInstructions: staticPair?.fullInstructions || "",
+    assignedVA: row.assignee || null,
+    stage: row.status as Stage,
+    dueDate: staticPair?.dueDate || "2026-03-07",
+    driveLink: staticPair?.driveLink || "",
+    notes: row.notes || "",
+    videoAUploaded: staticPair?.videoAUploaded || false,
+    videoBUploaded: staticPair?.videoBUploaded || false,
+    qaChecklist: staticPair?.qaChecklist || { cameraPosition: false, lighting: false, oneChange: false, duration: false, resolution: false, stableCamera: false, noOutfitChange: false, noFilters: false, naming: false },
+    delivered: staticPair?.delivered || false,
+  };
+}
+
+async function patchPair(pairNumber: number, fields: Record<string, any>): Promise<void> {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {}
-  return initialPairs;
+    await fetch("/api/pairs-update", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: pairNumber, ...fields }),
+    });
+  } catch (err) {
+    console.error("Failed to patch pair:", err);
+  }
 }
 
 export default function App() {
-  const [pairs, setPairs] = useState<VideoPair[]>(loadPairs);
+  const [pairs, setPairs] = useState<VideoPair[]>([]);
+  const [loading, setLoading] = useState(true);
   const [typeFilter, setTypeFilter] = useState("All");
   const [vaFilter, setVAFilter] = useState("All");
   const [search, setSearch] = useState("");
@@ -48,9 +81,21 @@ export default function App() {
 
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }));
 
+  // Load pairs from DB on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(pairs));
-  }, [pairs]);
+    fetch("/api/pairs")
+      .then((res) => res.json())
+      .then((rows) => {
+        if (Array.isArray(rows) && rows.length > 0) {
+          setPairs(rows.map(mergeDbRow));
+        } else {
+          // Fallback to static data
+          setPairs(initialPairs);
+        }
+      })
+      .catch(() => setPairs(initialPairs))
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
     return pairs.filter((p) => {
@@ -104,6 +149,7 @@ export default function App() {
 
     if (targetStage && activePair.stage !== targetStage) {
       setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, stage: targetStage } : p)));
+      patchPair(activePair.pairNumber, { status: targetStage });
       if (targetStage === "complete" && !activePair.delivered) {
         deliverToClient(activePair.pairNumber).then((ok) => {
           if (ok) setPairs((prev) => prev.map((p) => (p.id === active.id ? { ...p, delivered: true } : p)));
@@ -119,6 +165,14 @@ export default function App() {
   function handleUpdatePair(updated: VideoPair) {
     setPairs((prev) => prev.map((p) => (p.id === updated.id ? updated : p)));
     setSelectedPair(updated);
+    // Persist DB-backed fields
+    const prev = pairs.find((p) => p.id === updated.id);
+    const dbFields: Record<string, any> = {};
+    if (prev?.stage !== updated.stage) dbFields.status = updated.stage;
+    if (prev?.assignedVA !== updated.assignedVA) dbFields.assignee = updated.assignedVA;
+    if (prev?.notes !== updated.notes) dbFields.notes = updated.notes;
+    if (prev?.description !== updated.description) dbFields.description = updated.description;
+    if (Object.keys(dbFields).length > 0) patchPair(updated.pairNumber, dbFields);
     if (updated.stage === "complete" && !updated.delivered) {
       deliverToClient(updated.pairNumber).then((ok) => {
         if (ok) {
@@ -128,6 +182,17 @@ export default function App() {
         }
       });
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-gray-300 border-t-indigo-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading pairs...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
