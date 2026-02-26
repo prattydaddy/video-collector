@@ -1,4 +1,4 @@
-const { google } = require("googleapis");
+import { google } from "googleapis";
 
 function getAuth() {
   const oauth2Client = new google.auth.OAuth2(
@@ -9,7 +9,7 @@ function getAuth() {
   return oauth2Client;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -25,7 +25,6 @@ module.exports = async function handler(req, res) {
     const auth = getAuth();
     const drive = google.drive({ version: "v3", auth });
 
-    // Find the pair folder in our Drive
     const ourFolderId = process.env.OUR_DRIVE_FOLDER_ID;
     const clientFolderId = process.env.CLIENT_DRIVE_FOLDER_ID;
 
@@ -40,7 +39,6 @@ module.exports = async function handler(req, res) {
 
     const srcFolderId = searchRes.data.files[0].id;
 
-    // List all files in the source folder
     const filesRes = await drive.files.list({
       q: `'${srcFolderId}' in parents and trashed=false`,
       fields: "files(id,name,mimeType)",
@@ -51,7 +49,6 @@ module.exports = async function handler(req, res) {
       return res.status(404).json({ error: `No files found in ${folderName}` });
     }
 
-    // Create destination folder in client's Drive
     const destFolder = await drive.files.create({
       requestBody: {
         name: folderName,
@@ -61,7 +58,6 @@ module.exports = async function handler(req, res) {
       fields: "id",
     });
 
-    // Copy each file
     const copied = [];
     for (const file of files) {
       const copy = await drive.files.copy({
@@ -86,4 +82,4 @@ module.exports = async function handler(req, res) {
     console.error("Deliver error:", err);
     return res.status(500).json({ error: err.message });
   }
-};
+}

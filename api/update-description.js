@@ -1,4 +1,5 @@
-const { google } = require("googleapis");
+import { google } from "googleapis";
+import { Readable } from "stream";
 
 function getAuth() {
   const oauth2Client = new google.auth.OAuth2(
@@ -9,7 +10,7 @@ function getAuth() {
   return oauth2Client;
 }
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
@@ -29,7 +30,6 @@ module.exports = async function handler(req, res) {
     const drive = google.drive({ version: "v3", auth });
     const ourFolderId = process.env.OUR_DRIVE_FOLDER_ID;
 
-    // Find the pair folder
     const searchRes = await drive.files.list({
       q: `'${ourFolderId}' in parents and name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`,
       fields: "files(id,name)",
@@ -41,16 +41,12 @@ module.exports = async function handler(req, res) {
 
     const folderId = searchRes.data.files[0].id;
 
-    // Find description.txt
     const filesRes = await drive.files.list({
       q: `'${folderId}' in parents and name='description.txt' and trashed=false`,
       fields: "files(id,name)",
     });
 
-    const { Readable } = require("stream");
-
     if (filesRes.data.files?.length) {
-      // Update existing file
       const fileId = filesRes.data.files[0].id;
       await drive.files.update({
         fileId,
@@ -60,7 +56,6 @@ module.exports = async function handler(req, res) {
         },
       });
     } else {
-      // Create new description.txt
       await drive.files.create({
         requestBody: {
           name: "description.txt",
@@ -79,4 +74,4 @@ module.exports = async function handler(req, res) {
     console.error("update-description error:", err);
     return res.status(500).json({ error: err.message });
   }
-};
+}
