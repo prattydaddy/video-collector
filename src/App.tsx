@@ -9,7 +9,7 @@ import type { VideoPair, Stage } from "./types";
 import { STAGES } from "./types";
 
 const STORAGE_KEY = "video-collector-pairs";
-const STORE_VERSION = 9;
+const STORE_VERSION = 10;
 
 async function deliverToClient(pairNumber: number): Promise<boolean> {
   try {

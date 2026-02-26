@@ -47,4 +47,4 @@ export const TYPE_COLORS: Record<PairType, { bg: string; text: string }> = {
   "Audio Change": { bg: "bg-emerald-50", text: "text-emerald-700" },
 };
 
-export const VAS = ["Nate P.", "Joy S."];
+export const VAS = ["Nate P.", "Joy S.", "Jitu", "Salman"];
