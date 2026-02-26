@@ -1,6 +1,6 @@
-const { neon } = require('@neondatabase/serverless');
+import { neon } from '@neondatabase/serverless';
 
-module.exports = async function handler(req, res) {
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'PATCH, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -12,17 +12,14 @@ module.exports = async function handler(req, res) {
     const { id, ...fields } = req.body;
     if (!id) return res.status(400).json({ error: 'Missing id' });
 
-    // Get current pair
     const current = await sql`SELECT * FROM video_pairs WHERE id = ${id}`;
     if (!current.length) return res.status(404).json({ error: 'Pair not found' });
 
-    // Log status changes
     if (fields.status && fields.status !== current[0].status) {
       await sql`INSERT INTO video_pair_history (pair_id, old_status, new_status, changed_by)
                 VALUES (${id}, ${current[0].status}, ${fields.status}, ${fields.changed_by || 'app'})`;
     }
 
-    // Update each field individually (tagged templates don't support dynamic columns)
     if (fields.status !== undefined) {
       await sql`UPDATE video_pairs SET status = ${fields.status}, updated_at = NOW() WHERE id = ${id}`;
     }
@@ -45,11 +42,10 @@ module.exports = async function handler(req, res) {
       await sql`UPDATE video_pairs SET video_b_id = ${fields.video_b_id}, updated_at = NOW() WHERE id = ${id}`;
     }
 
-    // Return updated pair
     const updated = await sql`SELECT * FROM video_pairs WHERE id = ${id}`;
     res.status(200).json(updated[0]);
   } catch (err) {
     console.error('Error updating pair:', err);
     res.status(500).json({ error: 'Failed to update pair', detail: err.message });
   }
-};
+}
