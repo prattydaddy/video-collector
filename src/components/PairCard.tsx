@@ -62,6 +62,12 @@ export default function PairCard({ pair, onClick }: Props) {
         </div>
       </div>
 
+      {pair.delivered && (
+        <div className="mt-2 inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+          📤 Delivered
+        </div>
+      )}
+
       {pair.notes && (
         <div className="mt-2 px-2 py-1.5 bg-amber-50 rounded-lg">
           <p className="text-[11px] text-amber-700 leading-snug">{pair.notes}</p>

@@ -27,6 +27,7 @@ export interface VideoPair {
   videoAUploaded: boolean;
   videoBUploaded: boolean;
   qaChecklist: QAChecklist;
+  delivered: boolean;
 }
 
 export const STAGES: { key: Stage; label: string; color: string }[] = [

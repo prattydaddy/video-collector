@@ -151,11 +151,35 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
             />
           </div>
 
+          {/* Delivery Status */}
+          {pair.delivered && (
+            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-2.5 flex items-center gap-2">
+              <span className="text-[13px] font-medium text-emerald-700">📤 Delivered to client</span>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3 pt-2">
             <button
-              onClick={() => {
-                onUpdate({ ...pair, stage: "complete" });
+              onClick={async () => {
+                const updated = { ...pair, stage: "complete" as const };
+                onUpdate(updated);
+                // Auto-deliver to client
+                try {
+                  const resp = await fetch("/api/deliver", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ pairNumber: pair.pairNumber }),
+                  });
+                  if (resp.ok) {
+                    onUpdate({ ...updated, delivered: true });
+                  } else {
+                    const err = await resp.json();
+                    alert(`Delivery failed: ${err.error}`);
+                  }
+                } catch (e: any) {
+                  alert(`Delivery error: ${e.message}`);
+                }
                 onClose();
               }}
               className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-semibold rounded-xl transition-colors"
