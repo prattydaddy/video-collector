@@ -25,6 +25,8 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
   const [editingDesc, setEditingDesc] = useState(false);
   const [descDraft, setDescDraft] = useState(pair.description);
   const [driveSynced, setDriveSynced] = useState(false);
+  const [editingInstr, setEditingInstr] = useState(false);
+  const [instrDraft, setInstrDraft] = useState(pair.fullInstructions);
 
   const padded = String(pair.pairNumber).padStart(2, "0");
   const filenameA = `Pair${padded}_A.mp4`;
@@ -120,10 +122,45 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
             {driveSynced && <span className="text-[11px] text-emerald-600 mt-1">📁 Synced to Drive</span>}
           </div>
 
-          {/* Full Instructions */}
+          {/* Full Instructions (editable) */}
           <div>
-            <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Instructions</label>
-            <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.fullInstructions}</p>
+            <div className="flex items-center gap-1.5">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Instructions</label>
+              {!editingInstr && (
+                <button
+                  onClick={() => { setInstrDraft(pair.fullInstructions); setEditingInstr(true); }}
+                  className="text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Edit instructions"
+                >✏️</button>
+              )}
+            </div>
+            {editingInstr ? (
+              <textarea
+                autoFocus
+                value={instrDraft}
+                onChange={(e) => setInstrDraft(e.target.value)}
+                onBlur={() => {
+                  if (instrDraft !== pair.fullInstructions) {
+                    onUpdate({ ...pair, fullInstructions: instrDraft });
+                  }
+                  setEditingInstr(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    (e.target as HTMLTextAreaElement).blur();
+                  }
+                  if (e.key === "Escape") {
+                    setInstrDraft(pair.fullInstructions);
+                    setEditingInstr(false);
+                  }
+                }}
+                rows={4}
+                className="mt-1.5 w-full text-[13px] text-gray-700 border border-indigo-300 rounded-xl px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none"
+              />
+            ) : (
+              <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.fullInstructions}</p>
+            )}
           </div>
 
           {/* Rules */}
