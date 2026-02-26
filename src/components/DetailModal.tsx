@@ -22,6 +22,8 @@ const QA_LABELS: { key: keyof QAChecklist; label: string }[] = [
 export default function DetailModal({ pair, onClose, onUpdate }: Props) {
   const typeColor = TYPE_COLORS[pair.type];
   const [copiedFile, setCopiedFile] = useState<string | null>(null);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descDraft, setDescDraft] = useState(pair.description);
 
   const padded = String(pair.pairNumber).padStart(2, "0");
   const filenameA = `Pair${padded}_A.mp4`;
@@ -67,7 +69,48 @@ export default function DetailModal({ pair, onClose, onUpdate }: Props) {
         </div>
 
         <div className="px-6 py-5 space-y-5">
-          {/* Instructions */}
+          {/* Description (editable) */}
+          <div>
+            <div className="flex items-center gap-1.5">
+              <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Description</label>
+              {!editingDesc && (
+                <button
+                  onClick={() => { setDescDraft(pair.description); setEditingDesc(true); }}
+                  className="text-[13px] text-gray-400 hover:text-gray-600 transition-colors"
+                  title="Edit description"
+                >✏️</button>
+              )}
+            </div>
+            {editingDesc ? (
+              <textarea
+                autoFocus
+                value={descDraft}
+                onChange={(e) => setDescDraft(e.target.value)}
+                onBlur={() => {
+                  if (descDraft !== pair.description) {
+                    onUpdate({ ...pair, description: descDraft });
+                  }
+                  setEditingDesc(false);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    (e.target as HTMLTextAreaElement).blur();
+                  }
+                  if (e.key === "Escape") {
+                    setDescDraft(pair.description);
+                    setEditingDesc(false);
+                  }
+                }}
+                rows={2}
+                className="mt-1.5 w-full text-[13px] text-gray-700 border border-indigo-300 rounded-xl px-4 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all resize-none"
+              />
+            ) : (
+              <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.description}</p>
+            )}
+          </div>
+
+          {/* Full Instructions */}
           <div>
             <label className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Instructions</label>
             <p className="text-[13px] text-gray-700 mt-1.5 leading-relaxed">{pair.fullInstructions}</p>
